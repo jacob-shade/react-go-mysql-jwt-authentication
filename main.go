@@ -1,23 +1,18 @@
 package main
 
 import (
+	"react-go-mysql-jwt-authentication/database"
+	"react-go-mysql-jwt-authentication/routes"
+
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
 )
 
 func main() {
-	_, err := gorm.Open(mysql.Open("root:RiseUp3#sql@/go_auth"), &gorm.Config{})
-
-	if err != nil {
-		panic("could not connect to the database")
-	}
+	database.Connect()
 
 	app := fiber.New()
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World 👋!")
-	})
+	routes.Setup(app)
 
 	app.Listen(":3000")
 }
