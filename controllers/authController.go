@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"react-go-mysql-jwt-authentication/database"
 	"react-go-mysql-jwt-authentication/models"
 
@@ -29,5 +30,30 @@ func Register(c *fiber.Ctx) error {
 }
 
 func Login(c *fiber.Ctx) error {
+	var data map[string]string
 
+	if err := c.BodyParser(&data); err != nil {
+		fmt.Println("err in data")
+		return err
+	}
+
+	var user models.User
+
+	database.DB.Where("email = ?", data["email"]).First(&user)
+
+	if user.Id == 0 {
+		c.Status(fiber.StatusNotFound)
+		return c.JSON(fiber.Map{
+			"message": "user not found",
+		})
+	}
+
+	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(data["password"])); err != nil {
+		c.Status(fiber.StatusBadRequest)
+		return c.JSON(fiber.Map{
+			"message": "incorrect password",
+		})
+	}
+
+	return c.JSON(user)
 }
